@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template, request, redirect, flash, abort
+
+import flask_login
+
 import pymysql
 from dynaconf import Dynaconf
 
@@ -11,7 +14,25 @@ conf = Dynaconf(
 
 app.secret_key = conf.secret_key
 
+login_manager = flask_login.LoginManager()
+login_manager.init_app(app)
+
     
+class User:
+    is_authenticated = True
+    is_anonymous = False
+    is_active = True
+
+    def __init__(self, user_id, email, first_name, last_name):
+        self.id = user_id
+        self.email = email
+        self.first_name = first_name
+        self.last_name = last_name
+
+    def get_id(self):
+        return str(self.id)
+
+
 def connect_db():
     conn = pymysql.connect(
         host = "10.100.34.80",
@@ -23,6 +44,22 @@ def connect_db():
     )
 
     return conn
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT * FROM `Customer` WHERE `id` = {user_id};")
+
+    result = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if result is not None:
+        return User(result["id"], result["email"], result["first_name"],result["last_name"])
+
 
 @app.route("/")
 def index():
@@ -50,49 +87,102 @@ def product_browse():
     return render_template("browse.html.jinja", products = results)
 
 
-@app.route("/product")
-def product():
-    return render_template("product.html.jinja")
+@app.route("/product/<product_id>")
+def product(product_id):
+    conn = connect_db()
 
-@app.route("/sign_in")
-def sign_in():
-    return render_template("sign_in.html.jinja")
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT * FROM `Products` WHERE `id` = {product_id};")
+
+    result = cursor.fetchone()
+
+    if result is None:
+        abort(404)
+
+    cursor.close()
+    conn.close()
+
+    return render_template("product.html.jinja", product = result)
+
+
 
 @app.route("/sign_up", methods = ["POST","GET"])
 def sign_up():
-    if request.method == "POST":
-        first_name = request.form["first_name"]
-        last_name = request.form["last_name"]
-        email = request.form["email"]
-        password = request.form["password"]
-        confirm_password = request.form["confirm_password"]
-        address = request.form["address"]
+    if flask_login.current_user.is_authenticated:
+        return redirect("/") 
+    else:
+        if request.method == "POST":
+            first_name = request.form["first_name"]
+            last_name = request.form["last_name"]
+            email = request.form["email"]
+            password = request.form["password"]
+            confirm_password = request.form["confirm_password"]
+            address = request.form["address"]
 
-        if password != confirm_password:
-            flash("Your passwords do not match.")
-            return render_template("sign_up.html.jinja")
-        else:
-            if len(password) < 10:
-                flash("Your password should be at least 10 characters.")
+            if password != confirm_password:
+                flash("Your passwords do not match.")
+                return render_template("sign_up.html.jinja")
             else:
-                conn = connect_db()
-
-                cursor = conn.cursor()
-                try:
-                    cursor.execute(f""" 
-                    INSERT INTO `Customer` 
-                        (`first_name`, `last_name`,`email`,`password`, `address`)
-                        VALUES
-                            ('{first_name}', '{last_name}', '{email}', '{password}', '{address}');
-
-                    """)
-                except pymysql.err.IntegrityError:
-                    flash("There is already an account with this email.")
+                if len(password) < 10:
+                    flash("Your password should be at least 10 characters.")
                 else:
-                    return redirect("/sign_in")
-                finally:
-                    cursor.close()
-                    conn.close()
-            
+                    conn = connect_db()
 
-    return render_template("sign_up.html.jinja")
+                    cursor = conn.cursor()
+                    try:
+                        cursor.execute(f""" 
+                        INSERT INTO `Customer` 
+                            (`first_name`, `last_name`,`email`,`password`, `address`)
+                            VALUES
+                                ('{first_name}', '{last_name}', '{email}', '{password}', '{address}');
+
+                        """)
+                    except pymysql.err.IntegrityError:
+                        flash("There is already an account with this email.")
+                    else:
+                        return redirect("/sign_in")
+                    finally:
+                        cursor.close()
+                        conn.close()
+        return render_template("sign_up.html.jinja")
+
+@app.route("/sign_in",methods = ["POST","GET"])
+def sign_in():
+    if flask_login.current_user.is_authenticated:
+        return redirect("/") 
+    else:
+        if request.method == "POST":
+            email = request.form["email"].strip()
+            password = request.form["password"]
+
+            conn = connect_db()
+            cursor = conn.cursor()
+
+
+            
+            cursor.execute(f"SELECT * FROM `Customer` WHERE `email` = '{email}';")
+            result = cursor.fetchone()
+
+            if result is None:
+                flash("Your email or password is incorrect")
+            elif password != result["password"]:
+                flash("Your email or password is incorrect")
+            else:
+                user = User(result["id"], result["email"], result["first_name"],result["last_name"])
+                flask_login.login_user(user)
+
+                return redirect('/')
+
+
+        return render_template("sign_in.html.jinja")
+
+
+@app.route('/logout')
+def logout():
+    flask_login.logout_user()
+    return redirect('/')
+
+@app.route('/cart')
+@flask_login.login_required
+def cart():
+    return "cart page"

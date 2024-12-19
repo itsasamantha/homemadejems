@@ -13,8 +13,11 @@
           <a class="nav-link" href="/browse">Browse</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/sign_up"> Sign Up</a>
+          <a class="nav-link" href="/product"> Product</a>
         </li>
+        {# <li class="nav-item">
+          <a class="nav-link" href="/sign_in"> Sign In</a>
+        </li> #}
         {# <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Dropdown
@@ -36,6 +39,21 @@
           <button class="btn btn-outline-success" type="submit">Search</button>
         </div>
       </form>
+      {% if current_user.is_authenticated %}
+        <div class="dropdown">
+          <p class="dropdown-toggle p-3"  data-bs-toggle="dropdown" aria-expanded="false">
+            hi, {{current_user.first_name}}
+          </p>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+            {# <li><a class="dropdown-item" href="#">Another action</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">Something else here</a></li> #}
+          </ul>
+        </div>
+      {% else %}
+        <a class= "p-3"href="/sign_in">Sign In</a>
+      {% endif %}
     </div>
   </div>
 </nav>
