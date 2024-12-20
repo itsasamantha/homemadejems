@@ -104,6 +104,23 @@ def product(product_id):
 
     return render_template("product.html.jinja", product = result)
 
+@app.route("/product/<product_id>/cart", methods = ["POST"])
+@flask_login.login_required
+def add_to_cart(product_id):
+    quantity = request.form["quantity"]
+    customer_id = flask_login.current_user.id
+
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute(f""" 
+            INSERT INTO `Cart`
+                (`quantity`,`customer_id`,`product_id`)
+            VALUES
+                ("{quantity}","{customer_id}","{product_id}");
+
+    """)
+    return redirect("/cart") 
+
 
 
 @app.route("/sign_up", methods = ["POST","GET"])
