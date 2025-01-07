@@ -1,0 +1,33 @@
+.barrio-regular {
+    font-family: "Barrio", serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+
+body{
+background-color: #EDE8DC;
+color: #6c564c
+}
+
+.btn{
+    background-color: #E7CCCC;
+    color: #6c564c
+}
+
+.btn:hover{
+    background-color: #6c564c;
+    color: #E7CCCC
+}
+
+h1{
+    color: #496300;
+    font-family: "Barrio", serif;
+}
+.navbar-brand{
+    color: #496300;
+    font-family: "Barrio", serif;
+}
+
+
+

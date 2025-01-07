@@ -33,8 +33,9 @@
       <form class="d-flex" role="search" action = "/browse">
         <div class="input-group mb-3">
           <input class="form-control me-2" type="text" name="query" placeholder="Search..." aria-label="Search">
-          <button class="btn btn-outline-success" type="submit">Search</button>
+          <button class="btn" type="submit">Search</button>
         </div>
+        
       </form>
       {% if current_user.is_authenticated %}
         <div class="dropdown">
@@ -42,6 +43,7 @@
             hi, {{current_user.first_name}}
           </p>
           <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/cart">Cart</a></li>
             <li><a class="dropdown-item" href="/logout">Logout</a></li>
             {# <li><a class="dropdown-item" href="#">Another action</a></li>
             <li><hr class="dropdown-divider"></li>

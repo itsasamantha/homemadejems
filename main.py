@@ -76,7 +76,6 @@ def product_browse():
         cursor.execute("SELECT * FROM `Products`;")
     else:
         cursor.execute(f"SELECT * FROM `Products` WHERE `name` LIKE '%{query}%' OR `description` ;")
-        return render_template("browse.html.jinja", products = results)
 
     results = cursor.fetchall()
 
@@ -113,12 +112,13 @@ def add_to_cart(product_id):
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute(f""" 
-            INSERT INTO `Cart`
-                (`quantity`,`customer_id`,`product_id`)
-            VALUES
-                ("{quantity}","{customer_id}","{product_id}");
-
-    """)
+                    INSERT INTO `Cart`
+                        (`quantity`,`customer_id`,`product_id`)
+                    VALUES
+                        ("{quantity}","{customer_id}","{product_id}")
+                    ON DUPLICATE KEY UPDATE
+                        `quantity` = `quantity` + {quantity};
+                 """)
     return redirect("/cart") 
 
 
@@ -216,7 +216,44 @@ def cart():
 
     results = cursor.fetchall()
 
+    total = 0
+
+    for product in results:
+        quantity = product["quantity"]
+        price = product["price"]
+        tot = quantity * price
+        total = tot + total
+
+
+    cursor.close()
+    conn.close()
+    return render_template("cart.html.jinja", products= results, total = total)
+
+
+@app.route("/cart/<cart_id>/delete", methods = ["POST"])
+def remove_product(cart_id):
+
     conn = connect_db()
     cursor = conn.cursor()
+
+    cursor.execute(f"DELETE FROM `Cart` WHERE `id` {cart_id};") 
     
-    return render_template("cart.html.jinja", products= results)
+    cursor.close()
+    conn.close()
+
+    return redirect("/cart")
+    
+
+@app.route("/cart/<cart_id>/update", methods = ["POST","GET"])
+def update_quantity(cart_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute(f"""UPDATE `Cart`
+                       SET `quantity` = {new_quantity}
+    ;""") 
+
+    cursor.close()
+    conn.close()
+
+    return redirect("/cart")
