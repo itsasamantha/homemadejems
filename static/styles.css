@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Barrio&display=swap');
+
 .barrio-regular {
     font-family: "Barrio", serif;
     font-weight: 400;
@@ -28,6 +30,13 @@ h1{
     color: #496300;
     font-family: "Barrio", serif;
 }
-
+.billing-info{
+    background-color: white;
+    border: 1px solid rgb(208, 206, 206);
+    border-radius: 5px;
+}
+.semi-important{
+   background-color: #77655d;
+}
 
 
