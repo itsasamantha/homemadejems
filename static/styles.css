@@ -9,17 +9,17 @@
 
 body{
 background-color: #EDE8DC;
-color: #6c564c
+color: #6c564c;
 }
 
 .btn{
     background-color: #E7CCCC;
-    color: #6c564c
+    color: #6c564c;
 }
 
 .btn:hover{
     background-color: #6c564c;
-    color: #E7CCCC
+    color: #E7CCCC;
 }
 
 h1{
@@ -36,7 +36,28 @@ h1{
     border-radius: 5px;
 }
 .semi-important{
-   background-color: #77655d;
+   background-color: #6c564c;
 }
 
+.important{
+    background-color: #e7cccc8a;
+    border-color: #6c564c;
+    color: #6c564c;
+}
+strong{
+    color: #496300;
+}
 
+.link{
+    color: #6c564c;
+}
+.different{
+    background-color: #6c564c;
+    color: #E7CCCC;
+}
+
+.different:hover{
+    background-color: #E7CCCC;
+    color: #6c564c;
+    border-color: #6c564c;
+}
