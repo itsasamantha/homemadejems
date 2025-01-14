@@ -99,7 +99,15 @@ def product(product_id):
     if result is None:
         abort(404)
 
-    cursor.execute(f"SELECT * FROM `Review` JOIN `Customer` ON `Customer`.`id` = `customer_id` WHERE `id` = {product_id};")
+
+    cursor.execute(f"""SELECT `first_name`,`last_name`,`customer_id`,`written_review`,`rating`,`Review`.`id`
+                        FROM `Review`
+                        JOIN `Customer` ON `Customer`.`id` = `customer_id`
+                        WHERE `product_id` = {product_id};
+                    """)
+
+    
+
     review_result = cursor.fetchall()
 
 
@@ -190,7 +198,7 @@ def sign_in():
             elif password != result["password"]:
                 flash("Your email or password is incorrect")
             else:
-                user = User(result["id"], result["email"], result["first_name"],result["last_name"])
+                user = User(result["id"], result["email"], result["first_name"],result["last_name"],result["address"])
                 flask_login.login_user(user)
 
                 return redirect('/')
@@ -297,9 +305,7 @@ def checkout_page():
     conn.close()
     return render_template("checkout.html.jinja", products= results, total = total, count= count)
 
-@app.route("/check")
-def check():
-    return render_template("check.html.jinja")
+
 
 
 @app.route("/thank_you")
@@ -356,12 +362,21 @@ def add_review(product_id):
     conn = connect_db()
     cursor = conn.cursor()
 
+
+    customer_id = flask_login.current_user.id
+    review = request.form["review"]
+    rating = request.form["rating"]
+
     cursor.execute(f""" 
-                    INSERT INTO `Cart`
-                        (`quantity`,`customer_id`,`product_id`)
+                    INSERT INTO `Review`
+                        (`written_review`,`rating`,`product_id`,`customer_id`)
                     VALUES
-                        ("{quantity}","{customer_id}","{product_id}")
+                        ("{review}","{rating}","{product_id}","{customer_id}")
                     ON DUPLICATE KEY UPDATE
-                        `quantity` = `quantity` + {quantity};
+                        `rewiew` = {review}, `rating = {rating}`;
                  """)
-    return None
+    
+    cursor.close()
+    conn.close()
+                 
+    return redirect("/product/<product_id>")
