@@ -92,7 +92,7 @@ def product(product_id):
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute(f"SELECT * FROM `Products` WHERE `id` = {product_id};")
+    cursor.execute(f"SELECT * FROM `Products` WHERE `id` = '{product_id}';") 
 
     result = cursor.fetchone()
 
@@ -110,11 +110,20 @@ def product(product_id):
 
     review_result = cursor.fetchall()
 
+    total = 0
+    for review in review_result:
+        total = total + review['rating']
+
+    if len(review_result) != 0:
+        average = total/len(review_result)
+    else:
+        average = "There are no reviews"
+
 
     cursor.close()
     conn.close()
 
-    return render_template("product.html.jinja", product = result, reviews = review_result)
+    return render_template("product.html.jinja", product = result, reviews = review_result, average_rating = average)
 
 @app.route("/product/<product_id>/cart", methods = ["POST"])
 @flask_login.login_required
@@ -243,33 +252,37 @@ def cart():
     return render_template("cart.html.jinja", products= results, total = total)
 
 
-# @app.route("/cart/<cart_id>/delete", methods = ["POST"])
-# def remove_product(cart_id):
+@app.route("/cart/<cart_id>/delete", methods = ["POST"])
+def remove_product(cart_id):
 
-#     conn = connect_db()
-#     cursor = conn.cursor()
+    conn = connect_db()
+    cursor = conn.cursor()
 
-#     cursor.execute(f"DELETE FROM `Cart` WHERE `id` {cart_id};") 
+    cursor.execute(f"DELETE FROM `Cart` WHERE `id` = {cart_id};")
+
+    cursor.close()
+    conn.close()
+
+    return redirect("/cart")
     
-#     cursor.close()
-#     conn.close()
 
-#     return redirect("/cart")
-    
+@app.route("/cart/<cart_id>/update", methods = ["POST"])
+def update_quantity(cart_id):
 
-# @app.route("/cart/<cart_id>/update", methods = ["POST","GET"])
-# def update_quantity(cart_id):
-#     conn = connect_db()
-#     cursor = conn.cursor()
+    new_quantity = request.form["new_quantity"]
 
-#     cursor.execute(f"""UPDATE `Cart`
-#                        SET `quantity` = {new_quantity}
-#     ;""") 
+    conn = connect_db()
+    cursor = conn.cursor()
+        
 
-#     cursor.close()
-#     conn.close()
+    cursor.execute(f"""UPDATE `Cart`
+                       SET `quantity` = {new_quantity} WHERE `id` = {cart_id} ;
+                    """) 
 
-#     return redirect("/cart")
+    cursor.close()
+    conn.close()
+
+    return redirect("/cart")
 
 
 @app.route("/checkout")
@@ -364,19 +377,38 @@ def add_review(product_id):
 
 
     customer_id = flask_login.current_user.id
-    review = request.form["review"]
+    written_review = request.form["written_review"]
     rating = request.form["rating"]
 
     cursor.execute(f""" 
                     INSERT INTO `Review`
                         (`written_review`,`rating`,`product_id`,`customer_id`)
                     VALUES
-                        ("{review}","{rating}","{product_id}","{customer_id}")
+                        ("{written_review}","{rating}","{product_id}","{customer_id}")
                     ON DUPLICATE KEY UPDATE
-                        `rewiew` = {review}, `rating = {rating}`;
+                        `written_review` = "{written_review}", `rating` = "{rating}";
                  """)
     
     cursor.close()
     conn.close()
                  
-    return redirect("/product/<product_id>")
+    return redirect(f"/product/{product_id}")
+    
+    
+@app.route("/orders")
+def orders():
+
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    customer_id = flask_login.current_user.id
+
+    cursor.execute(f"SELECT * FROM `Sale` WHERE `customer_id` = {customer_id};")
+    
+    results = cursor.fetchall()
+
+
+    cursor.close()
+    conn.close()    
+
+    return render_template("orders.html.jinja", results = results)
