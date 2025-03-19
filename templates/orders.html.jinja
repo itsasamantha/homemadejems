@@ -11,14 +11,22 @@
     {% include "Components/navbar.html.jinja"%}
 
     <h1 class="text-center p-5">Your Orders</h1>
-    <div class="container order_info">
+    {%if results|length == 0 %}
+      <h1 class="text-center">You have no past orders</h1>
+      <div class="text-center">
+          <a href="/browse" class="center btn mx-auto p-2">Start Shopping</a>
+        </div>
+    {%else%}
+      <div class="container order_info">
+    
         {%for order in results%} 
             <p> Order Number: {{order["id"]}}</p>
                 <p>{{order["status"]}}</p>
                 <p>{{order["timestamp"]}}</p>
                 <hr>
         {%endfor%}
-    </div>
+      </div> 
+    {%endif%}
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

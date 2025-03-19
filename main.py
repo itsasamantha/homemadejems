@@ -36,7 +36,7 @@ class User:
 
 def connect_db():
     conn = pymysql.connect(
-        host = "10.100.34.80",
+        host = "db.steamcenter.tech",
         database = "spowell_home_made",
         user = "spowell",
         password = conf.password,
