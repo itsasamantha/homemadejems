@@ -6,11 +6,15 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        {# <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Home</a>
-        </li> #}
+        
         <li class="nav-item">
           <a class="nav-link" href="/browse">Browse</a>
+        </li>
+         <li class="nav-item">
+          <a class="nav-link" href="/cart">Cart</a>
+        </li>
+         <li class="nav-item">
+          <a class="nav-link" href="/orders">Past Orders</a>
         </li>
         {# <li class="nav-item">
           <a class="nav-link" href="/sign_in"> Sign In</a>
@@ -43,8 +47,6 @@
             hi, {{current_user.first_name}}
           </p>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/cart">Cart</a></li>
-            <li><a class="dropdown-item" href="/orders">Past Orders</a></li>
             <li><a class="dropdown-item" href="/logout">Logout</a></li>
             {# <li><a class="dropdown-item" href="#">Another action</a></li>
             <li><hr class="dropdown-divider"></li>
